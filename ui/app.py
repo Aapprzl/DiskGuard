@@ -88,8 +88,11 @@ class App(ctk.CTk):
             except Exception:
                 pass
         
-        ctk.set_appearance_mode("dark")
+        from config import config
+        saved_theme = config.get('theme', 'dark') or 'dark'
+        ctk.set_appearance_mode(saved_theme)
         ctk.set_default_color_theme("blue")
+        self.current_theme = saved_theme
         
         self.header_frame = ctk.CTkFrame(self, height=60, corner_radius=0)
         self.header_frame.pack(fill="x")
@@ -119,8 +122,15 @@ class App(ctk.CTk):
             self.header_frame, text="⚙️", width=40, height=30,
             command=self.open_settings
         )
-        self.settings_btn.pack(side="right", padx=15)
+        self.settings_btn.pack(side="right", padx=5)
         ToolTip(self.settings_btn, "Settings")
+        
+        self.theme_btn = ctk.CTkButton(
+            self.header_frame, text="🌙" if saved_theme == "light" else "☀️", width=40, height=30,
+            command=self.toggle_theme
+        )
+        self.theme_btn.pack(side="right", padx=(0, 10))
+        ToolTip(self.theme_btn, "Toggle Theme")
         
         self.tab_view = ctk.CTkTabview(self)
         self.tab_view.pack(fill="both", expand=True, padx=10, pady=10)
@@ -190,6 +200,20 @@ Settings are stored in:
 Note: Full settings UI coming soon!"""
         
         messagebox.showinfo("DiskGuard Settings", settings_text)
+    
+    def toggle_theme(self):
+        from config import config
+        
+        if self.current_theme == "dark":
+            ctk.set_appearance_mode("light")
+            self.theme_btn.configure(text="🌙")
+            self.current_theme = "light"
+            config.set('theme', 'light')
+        else:
+            ctk.set_appearance_mode("dark")
+            self.theme_btn.configure(text="☀️")
+            self.current_theme = "dark"
+            config.set('theme', 'dark')
 
 
 def run():
