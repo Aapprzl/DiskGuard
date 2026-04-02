@@ -1,6 +1,8 @@
 # DiskGuard v1.0.0
 
-Desktop tool untuk Windows 11 dengan 3 fitur utama: Recovery Data, Smart Transfer, dan Health Check SSD/HDD.
+Desktop tool untuk Windows 11 untuk Recovery Data dan Health Check SSD/HDD.
+
+![DiskGuard](icon.png)
 
 ## Instalasi
 
@@ -12,37 +14,42 @@ Desktop tool untuk Windows 11 dengan 3 fitur utama: Recovery Data, Smart Transfe
 
 ## Cara Menjalankan
 
-```
+### Via Python
+```bash
 python main.py
 ```
 
-**Penting:** Jalankan sebagai Administrator untuk akses penuh ke SMART data dan recovery.
+### Via Executable
+```
+dist/DiskGuard.exe
+```
+
+**Catatan:** Aplikasi akan otomatis meminta akses Administrator (UAC popup) saat dibuka.
 
 ## Fitur
 
-### 1. Health Check
+### 1. Recovery Tab
+- Scan drive untuk file berdasarkan kategori (Documents, Images, Videos, Audio, Archives)
+- Tree view untuk navigasi folder
+- Filter dan search filename
+- Auto-sort: File Error (0 B) muncul di atas dan tidak tercentang
+- Readable files otomatis tercentang saat pertama muncul
+- Byte-level recovery dengan tolerance bad sector
+- Timeout handling - file yang timeout tetap diproses dan tidak menghentikan operasi
+- Progress tracking real-time dengan counter
+- Live log dengan color coding:
+  - `[OK]` - Hijau (file berhasil di-rescue)
+  - `[PARTIAL]` - Kuning (file berhasil sebagian)
+  - `[FAILED]` - Merah (file gagal)
+  - `[INFO]` - Biru (informasi)
+- Report popup di akhir operasi
+
+### 2. Health Check Tab
 - Deteksi semua disk yang terinstall
 - Baca SMART data (status, suhu, bad sectors, dll)
 - Tampilkan penggunaan disk (used/free)
 - Color coding: hijau (Good), kuning (Warning), merah (Critical)
 - Progress bar untuk health score
-
-### 2. Smart Transfer
-- Copy file/folder dengan retry otomatis
-- Pause/Resume/Cancel transfer
-- Byte-level copy dengan chunk 4MB
-- Progress real-time: persentase, kecepatan (MB/s), ETA
-- Verifikasi ukuran file setelah copy
-- Log aktivitas transfer
-- Handle stalled transfer (retry jika speed=0 selama 10 detik)
-
-### 3. Data Recovery
-- Scan drive untuk file berdasarkan kategori
-- Filter: Documents, Images, Videos, Audio, Archives
-- Byte-level recovery dengan tolerance bad sector
-- Isi chunk yang gagal dibaca dengan zeros
-- Progress rescue dengan counter
-- Report: sukses penuh, partial, gagal
 
 ## Konfigurasi
 
@@ -55,19 +62,21 @@ Settings disimpan di `~/.diskguard/config.json`:
 
 ```
 diskguard/
-├── main.py              # Entry point
+├── main.py              # Entry point (dengan auto UAC elevation)
 ├── config.py            # Settings management
 ├── core/
 │   ├── health.py        # SMART data, disk usage
-│   ├── recovery.py      # Data recovery engine
-│   └── transfer.py      # Smart transfer engine
+│   └── recovery.py      # Data recovery engine
 ├── ui/
 │   ├── app.py           # Main window
 │   ├── tab_health.py    # Health check UI
-│   ├── tab_recovery.py  # Recovery UI
-│   └── tab_transfer.py  # Transfer UI
+│   └── tab_recovery.py  # Recovery UI
 ├── utils/
 │   └── helpers.py       # Utility functions
+├── icon.ico             # App icon
+├── icon.png             # App icon (PNG)
+├── run.bat              # Quick launch script
+├── run_admin.bat        # Launch as Administrator
 └── requirements.txt
 ```
 
@@ -81,8 +90,22 @@ diskguard/
 - pywin32
 - Pillow
 
+## Build Executable
+
+```bash
+pip install pyinstaller
+pyinstaller --onefile --windowed --icon="icon.ico" --name="DiskGuard" \
+  --collect-all customtkinter --collect-all psutil \
+  --hidden-import=wmi --hidden-import=win32api \
+  --hidden-import=win32com --hidden-import=win32com.client \
+  main.py
+```
+
+Executable akan tersedia di folder `dist/DiskGuard.exe`
+
 ## Catatan
 
 - Beberapa SMART attributes mungkin tidak tersedia di consumer SSD
-- Jalankan sebagai Administrator untuk data SMART lengkap
-- Jangan cabut drive saat proses transfer/rescue berlangsung
+- Aplikasi auto-request admin rights via UAC
+- Jangan cabut drive saat proses rescue berlangsung
+- File timeout akan ditandai sebagai "partial" dan tetap diproses
