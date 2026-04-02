@@ -500,7 +500,10 @@ class TabRecovery(ctk.CTkFrame):
             if var.get():
                 selected_categories.append(cat)
                 
-        base_files = self.folder_map.get(self.current_folder, []) if self.current_folder else self.all_files
+        if self.current_folder:
+            base_files = [f for f in self.all_files if f["path"].startswith(self.current_folder)]
+        else:
+            base_files = self.all_files
         
         if "All" in selected_categories:
             filtered = list(base_files)
