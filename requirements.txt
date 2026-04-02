@@ -1,0 +1,6 @@
+customtkinter
+psutil
+wmi
+pywin32
+Pillow
+pySMART
