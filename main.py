@@ -8,9 +8,14 @@ def is_admin():
     except:
         return False
 
+if getattr(sys, 'frozen', False):
+    exe_path = sys.executable
+else:
+    exe_path = sys.executable
+
 if not is_admin():
     ctypes.windll.shell32.ShellExecuteW(
-        None, "runas", sys.executable, " ".join(sys.argv), None, 1
+        None, "runas", exe_path, " ".join(sys.argv), None, 1
     )
     sys.exit()
 
